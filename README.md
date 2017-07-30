@@ -77,6 +77,7 @@ Add extra margins to the elements bounding rect
 
 "Works for me" ;-)
 
+Tested in Vivaldi 1.10. Chrome 59 and Firefox 52.
 If you find a bug that only occurs in another browser, please try to debug it
 yourself and send a patch or pull request.
 
