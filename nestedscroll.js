@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017, Roland  Tapken.
+ * Copyright (c) 2017, Roland Tapken.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,9 @@
 		};
 	}
 
+	/**
+	 * Helper function to check if an object is a function
+	 **/
 	function isFunction(functionToCheck) {
 		// https://stackoverflow.com/questions/5999998/how-can-i-check-if-a-javascript-variable-is-function-type
 		var getType = {};
@@ -107,9 +110,7 @@
 	};
 
 	/**
-	 * Implement the scrolling. If this is implemented asynchronously
-	 * the function has to monitor 'this.abort' and stop scrolling
-	 * immediatly if this becomes true.
+	 * Implements scrolling without animation.
 	 */
 	var defaultScrollHelper = function(target, left, top) {
 		if (!this.abort) {
@@ -118,7 +119,14 @@
 		}
 	};
 
-	var easingScrollHelper = function(target, left, top, easingAlgorithm, timeout) {
+	/**
+	 * Implements scrolling with an animation. The parameter 'timeout'
+	 * defines how long the animation should be active. The parameter
+	 * 'easingAlgorithm' is a function that transforms a value between
+	 * 0 and 1 (the fractional animation offset) into a target value
+	 * between 0 and 1 (the fractional scrolling offset).
+	 **/
+	var animatedScrollHelper = function(target, left, top, easingAlgorithm, timeout) {
 		var start;
 		var signX = left < 0 ? -1 : 1;
 		var signY = top < 0 ? -1 : 1;
@@ -161,11 +169,11 @@
 		var easingTimeout = parseInt(this.options['easingTimeout']);
 		if (easingMethod && !isNaN(easingTimeout) && easingTimeout > 0) {
 			if (isFunction(easingMethod)) {
-				return easingScrollHelper.call(this, target, left, top, easingMethod, easingTimeout);
+				return animatedScrollHelper.call(this, target, left, top, easingMethod, easingTimeout);
 			} else {
 				var easingAlgorithm = easingAlgorithms[easingMethod];
 				if (easingAlgorithm !== undefined) {
-					return easingScrollHelper.call(this, target, left, top, easingAlgorithm, easingTimeout);
+					return animatedScrollHelper.call(this, target, left, top, easingAlgorithm, easingTimeout);
 				}
 			}
 		}
@@ -253,6 +261,10 @@
 		return undefined;
 	};
 
+	/**
+	 * Helper functions that return the scrolling deltas for
+	 * different alignments.
+	 **/
 	var alignments = {
 		left: function(rect, scrollable, force) {
 			if (!force && rect.left >= 0 && rect.right <= scrollable.clientWidth) {
@@ -305,6 +317,11 @@
 		}
 	};
 
+	/**
+	 * Calculates the target bounding client rect and adds optional
+	 * CSS borders and margins, and if defined the extra margins
+	 * from options.
+	 **/
 	var getTargetBoundingClientRect = function(element, options) {
 		var rect = element.getBoundingClientRect();
 		var left = 0|parseInt(options.marginLeft),
@@ -328,8 +345,11 @@
 		);
 	};
 
+	/**
+	 * Implementation of NestedScroll.
+	 **/
 	var currentScrollMonitor;
-	var scrollIntoViewport = function(element, options) {
+	var nestedScroll = function(element, options) {
 		options = mergeObjects(defaultOptions, options);
 
 		// Stop running scroll process
@@ -375,10 +395,6 @@
 		}
 	};
 
-	return {
-		scrollIntoViewport: scrollIntoViewport,
-		defaultOptions: defaultOptions
-	};
-
-
+	nestedScroll.defaultOptions = defaultOptions;
+	return nestedScroll;
 });
