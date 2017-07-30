@@ -1,0 +1,330 @@
+<html>
+	<head>
+		<title>Multiscroll</title>
+
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+
+			html, body {
+				min-width: 100%;
+				min-height: 100%;
+			}
+
+			body {
+			}
+
+			header {
+				position: fixed;
+				top: 0;
+				left: 50%;
+				padding: 1em;
+				background-color: #eee;
+				border: 1px solid #666;
+				border-top: 0;
+				transform: translate(-50%, 0);
+				z-index: 1000;
+			}
+
+			.level-1 {
+				border: 1px solid #ff0000;
+				padding: 0.5em;
+			}
+
+			.level-2 {
+				border: 1px solid #00ff00;
+				padding: 0.5em;
+			}
+
+			.level-3 {
+				border: 1px solid #0000ff;
+				padding: 0.5em;
+			}
+
+			.target {
+				background-color: #ff55ff;
+				width: 3em;
+				height: 3em;
+				border-radius: 50%;
+			}
+
+			#test1 {
+				position: relative;
+				width: 300vw;
+				height: 300vh;
+			}
+
+			#test1 .level-1 {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 100vw;
+				height: 100vw;
+				overflow: auto;
+				transform: translate(-50%, -50%);
+			}
+
+			#test1 .level-2 {
+				width: 100vw;
+				height: 100vw;
+				position: relative;
+				left: 50%;
+				top: 50%;
+			}
+
+			#test1 .level-3 {
+				position: absolute;
+				width: 10em;
+				height: 10em;
+				overflow: auto;
+			}
+
+			#test1 .target {
+				margin: 15em;
+			}
+
+			#test2 {
+				position: fixed;
+				width: 10em;
+				height: 10em;
+				right: 2em;
+				bottom: 2em;
+				background-color: #aaff7f;
+				overflow: auto;
+			}
+
+			#test2 .level-1 {
+				width: 30em;
+				height: 30em;
+			}
+
+			#test2 .target {
+				margin: 10em;
+			}
+		</style>
+
+		<script>
+			"use strict"; 
+
+			var min = Math.min,
+				max = Math.max;
+
+			/**
+			 * Implement the scrolling. If this is implemented asynchronously
+			 * the function has to monitor 'this.abort' and stop scrolling
+			 * immediatly if this becomes true.
+			 */
+			function defaultScrollHelper(target, left, top) {
+				if (!this.abort) {
+					target.scrollLeft += left;
+					target.scrollTop += top;
+				}
+			}
+
+			function linearScrollHelper(target, left, top) {
+				var timeout = 2000;
+				var start;
+				var signX = left < 0 ? -1 : 1;
+				var signY = left < 0 ? -1 : 1;
+				left = Math.abs(left);
+				top = Math.abs(top);
+				var _this = this;
+
+				var sourceX = target.scrollLeft;
+				var sourceY = target.scrollTop;
+
+				var linearEasingHelper = function(linearPos) {
+					return linearPos;
+				}
+
+				/**
+				 * Cosinus easing helper
+				 */
+				var sinusInOutEasingHelper = function(linearPos) {
+					if (linearPos < 1) {
+						return 0.5 * (1+Math.cos(Math.PI + linearPos * Math.PI));
+					} else {
+						return 1.0;
+					}
+				};
+
+				var sinusInEasingHelper = function(linearPos) {
+					if (linearPos < 1) {
+						return (1+Math.cos(Math.PI + linearPos * 0.5*Math.PI));
+					} else {
+						return 1.0;
+					}
+				};
+
+				var sinusOutEasingHelper = function(linearPos) {
+					if (linearPos < 1) {
+						return Math.sin(linearPos * 0.5*Math.PI);
+					} else {
+						return 1.0;
+					}
+				};
+
+				var easingHelper = sinusOutEasingHelper;
+
+				function step(timestamp) {
+					if (_this.abort) {
+						return;
+					}
+					if (start === undefined) {
+						start = timestamp;
+					}
+
+					// Get relative position to timeout
+					if ((timestamp - start) < timeout) {
+						var pos = easingHelper((timestamp - start)/timeout);
+						var deltaX = Math.round(min(left, left*pos));
+						var deltaY = Math.round(min(top, top*pos));
+						target.scrollLeft = sourceX + signX*deltaX;
+						target.scrollTop  = sourceY + signY*deltaY;
+						window.requestAnimationFrame(step);
+					} else {
+						target.scrollLeft = sourceX + signX*left;
+						target.scrollTop  = sourceY + signY*top;
+						console.log("Animation ended");
+					}
+				};
+				window.requestAnimationFrame(step);
+			}
+
+			function Rect(x, y, width, height) {
+				return {
+					left: x,
+					top: y,
+					width: width,
+					height: height,
+					right: x + width,
+					bottom: y + height
+				};
+			}
+
+			function resetScroll() {
+				//document.scrollingElement.scrollTop = 0;
+				//document.scrollingElement.scrollLeft = 0;
+				[].forEach.call(document.querySelectorAll('*'), function(e) {
+					if (e.scrollTop !== undefined) {
+						e.scrollTop = 0;
+						e.scrollLeft = 0;
+					}
+				});
+			}
+
+			function hasScrollbar(element, computedStyle) {
+				if (element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight) {
+					var computedStyle = computedStyle || window.getComputedStyle(element);
+					if (computedStyle.getPropertyValue('overflow') !== 'hidden') {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			function getRelativeBoundingRect(target, container) {
+				var tRect = target.getBoundingClientRect();
+				var cRect;
+				if (container === document.scrollingElement) {
+					cRect = new Rect(0, 0, container.clientWidth, container.clientHeight);
+				} else {
+					cRect = container.getBoundingClientRect();
+				}
+				
+				return new Rect(
+					tRect.left - cRect.left,
+					tRect.top - cRect.top,
+					tRect.right - cRect.left,
+					tRect.bottom - cRect.top
+				);
+			}
+
+			function findScrollableParent(element) {
+				if (element === document.scrollingElement) {
+					// This is either body or html. Don't go further.
+					return;
+				}
+
+				var computedStyle = window.getComputedStyle(element);
+				while (computedStyle.getPropertyValue('position') !== 'fixed' && element.parentElement) {
+					element = element.parentElement;
+					computedStyle = window.getComputedStyle(element);
+					if (hasScrollbar(element, computedStyle)) {
+						return element;
+					}
+				}
+				return undefined;
+			}
+
+			var currentScrollMonitor = undefined;
+			function scrollIntoViewport(element, scrollHelper) {
+				if (scrollHelper === undefined) {
+					scrollHelper = defaultScrollHelper;
+				}
+
+				// Stop running scroll process
+				if (currentScrollMonitor !== undefined) {
+					currentScrollMonitor.abort = true;
+				}
+				currentScrollMonitor = { abort: false };
+
+				var scrollable = findScrollableParent(element);
+				var scrollings = [];
+				var totalOffsetLeft = 0,
+				    totalOffsetTop = 0;
+				while (scrollable) {
+					var rect = getRelativeBoundingRect(element, scrollable);
+					rect.left -= totalOffsetLeft;
+					rect.top -= totalOffsetTop;
+
+					var maxLeft = scrollable.scrollWidth - scrollable.clientWidth;
+					var maxTop = scrollable.scrollHeight - scrollable.clientHeight;
+
+					var offsetLeft = min(maxLeft, max(0, scrollable.scrollLeft + rect.left)) - scrollable.scrollLeft;
+					var offsetTop = min(maxTop, max(0, scrollable.scrollTop + rect.top)) - scrollable.scrollTop;
+
+					totalOffsetLeft += offsetLeft;
+					totalOffsetTop += offsetTop;
+					scrollings.push([scrollable, offsetLeft, offsetTop]);
+
+					scrollable = findScrollableParent(scrollable);
+				}
+
+				// Invoke scroll tasks. This is done asynchonously to allow effects like easing.
+				for (var i = 0; i < scrollings.length; i+=1) {
+					scrollHelper.apply(currentScrollMonitor, scrollings[i]);
+				}
+			}
+
+
+		</script>
+
+	</head>
+	<body class="body">
+
+		<header>
+			<button onclick="scrollIntoViewport(document.querySelector('#test1 .target'), linearScrollHelper)">Test 1</button>
+			<button onclick="scrollIntoViewport(document.querySelector('#test2 .target'), linearScrollHelper)">Test 2</button>
+			<button onclick="resetScroll()">Reset</button>
+		</header>
+
+		<div id="test1" class="test1">
+			<div class="level-1">
+				<div class="level-2">
+					<div class="level-3">
+						<div class="target">Target  1</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="test2">
+			<div class="level-1">
+				<div class="target">Target 2</div>
+			</div>
+		</div>
+
+	</body>
+</html>
