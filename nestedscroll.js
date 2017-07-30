@@ -40,6 +40,7 @@
 		easingTimeout: 500,
 		force: false,
 		align: 'top left',
+		withMargins: false
 	};
 
 	// Local shortcuts
@@ -208,8 +209,18 @@
 	 * the container element. The container *must* be a parent
 	 * element of target.
 	 **/
-	var getRelativeBoundingRect = function(target, container) {
+	var getRelativeBoundingRect = function(target, container, margins) {
 		var tRect = target.getBoundingClientRect();
+		if (margins) {
+			tRect = new Rect(
+				tRect.left - margins.left,
+				tRect.top - margins.top,
+				tRect.width + margins.left + margins.right,
+				tRect.height + margins.top + margins.bottom
+			);
+			console.log("new", tRect);
+		}
+
 		var cRect;
 		if (container === document.scrollingElement) {
 			cRect = new Rect(0, 0, container.clientWidth, container.clientHeight);
@@ -316,6 +327,17 @@
 		}
 		currentScrollMonitor = { abort: false, options: options };
 
+		var margins;
+		if (options.withMargins) {
+			var tStyle = window.getComputedStyle(element);
+			margins = {
+				top: parseInt(tStyle.marginTop || '0', 10) + parseInt(tStyle.borderTop || '0', 10),
+				left: parseInt(tStyle.marginLeft || '0', 10) + parseInt(tStyle.borderLeft || '0', 10),
+				bottom: parseInt(tStyle.marginBottom || '0', 10) + parseInt(tStyle.borderBottom || '0', 10),
+				right: parseInt(tStyle.marginRight || '0', 10) + parseInt(tStyle.borderRight || '0', 10)
+			};
+		}
+
 		var align = (options.align || '').split(' ');
 		var getOffsetX = options.align.indexOf('left') >= 0 ? alignments['left'] : (
 			options.align.indexOf('right') >= 0 ? alignments['right'] : alignments['autox']
@@ -329,7 +351,7 @@
 		var totalOffsetLeft = 0,
 			totalOffsetTop = 0;
 		while (scrollable) {
-			var rect = getRelativeBoundingRect(element, scrollable);
+			var rect = getRelativeBoundingRect(element, scrollable, margins);
 			rect.left -= totalOffsetLeft;
 			rect.top -= totalOffsetTop;
 			rect.right -= totalOffsetLeft;

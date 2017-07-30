@@ -81,7 +81,7 @@
 			}
 
 			#test1 .target {
-				margin: 15em;
+				margin: 1em;
 			}
 
 			#test2 {
@@ -121,7 +121,7 @@
 	<body class="body">
 
 		<header>
-			<button onclick="nestedScroll.scrollIntoViewport(document.querySelector('#test1 .target'), { easingMethod: 'easeInOut', easingTimeout: 2000, align: '', force: true })">Test 1</button>
+			<button onclick="nestedScroll.scrollIntoViewport(document.querySelector('#test1 .target'), { easingMethod: 'easeInOut', easingTimeout: 2000, align: '', force: true, withMargins: true })">Test 1</button>
 			<button onclick="nestedScroll.scrollIntoViewport(document.querySelector('#test2 .target'), { align: '' })">Test 2</button>
 			<button onclick="resetScroll()">Reset</button>
 		</header>
