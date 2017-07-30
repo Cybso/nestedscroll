@@ -1,6 +1,6 @@
 # Nested Scroll
 
-Javascript library that implements [scrollIntoViewport()](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView])
+Javascript library that implements [scrollIntoViewport()](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView)
 for elements within nested scrollable divs.
 
 ## Usage
