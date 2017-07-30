@@ -36,8 +36,8 @@
 	 * Default options
 	 **/
 	var defaultOptions = {
-		easingMethod: undefined,
-		easingTimeout: 500,
+		animationMethod: undefined,
+		animationTimeout: 500,
 		force: false,
 		align: 'top left',
 		withCssMargins: false,
@@ -76,10 +76,10 @@
 	}
 
 	/**
-	 * Available easing algorithms. The algorithems get an argument
+	 * Available animation algorithms. The algorithems get an argument
 	 * between 0..1 and must return a result value between 0..1.
 	 **/
-	var easingAlgorithms = {
+	var animationAlgorithms = {
 		linear: function(linearPos) {
 			return linearPos;
 		},
@@ -122,11 +122,11 @@
 	/**
 	 * Implements scrolling with an animation. The parameter 'timeout'
 	 * defines how long the animation should be active. The parameter
-	 * 'easingAlgorithm' is a function that transforms a value between
+	 * 'animationAlgorithm' is a function that transforms a value between
 	 * 0 and 1 (the fractional animation offset) into a target value
 	 * between 0 and 1 (the fractional scrolling offset).
 	 **/
-	var animatedScrollHelper = function(target, left, top, easingAlgorithm, timeout) {
+	var animatedScrollHelper = function(target, left, top, animationAlgorithm, timeout) {
 		var start;
 		var signX = left < 0 ? -1 : 1;
 		var signY = top < 0 ? -1 : 1;
@@ -147,7 +147,7 @@
 
 			// Get relative position to timeout
 			if ((timestamp - start) < timeout) {
-				var pos = easingAlgorithm((timestamp - start)/timeout);
+				var pos = animationAlgorithm((timestamp - start)/timeout);
 				var deltaX = Math.round(min(left, left*pos));
 				var deltaY = Math.round(min(top, top*pos));
 				target.scrollLeft = sourceX + signX*deltaX;
@@ -162,18 +162,18 @@
 	};
 
 	/**
-	 * Chooses a scroll helper from this.options.easing.
+	 * Chooses a scroll helper from this.options.animationMethod.
 	 **/
 	var scrollHelper = function(target, left, top) {
-		var easingMethod = this.options['easingMethod'];
-		var easingTimeout = parseInt(this.options['easingTimeout']);
-		if (easingMethod && !isNaN(easingTimeout) && easingTimeout > 0) {
-			if (isFunction(easingMethod)) {
-				return animatedScrollHelper.call(this, target, left, top, easingMethod, easingTimeout);
+		var animationMethod = this.options['animationMethod'];
+		var animationTimeout = parseInt(this.options['animationTimeout']);
+		if (animationMethod && !isNaN(animationTimeout) && animationTimeout > 0) {
+			if (isFunction(animationMethod)) {
+				return animatedScrollHelper.call(this, target, left, top, animationMethod, animationTimeout);
 			} else {
-				var easingAlgorithm = easingAlgorithms[easingMethod];
-				if (easingAlgorithm !== undefined) {
-					return animatedScrollHelper.call(this, target, left, top, easingAlgorithm, easingTimeout);
+				var animationAlgorithm = animationAlgorithms[animationMethod];
+				if (animationAlgorithm !== undefined) {
+					return animatedScrollHelper.call(this, target, left, top, animationAlgorithm, animationTimeout);
 				}
 			}
 		}

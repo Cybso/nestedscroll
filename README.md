@@ -13,8 +13,8 @@ for elements within nested scrollable divs.
   // Scroll with additional parameters
   var options = {
     // See section options
-    easingMethod: 'easeInOut',
-    easingTimeout: 500,
+    animationMethod: 'easeInOut',
+    animationTimeout: 500,
     force: true,
     align: 'auto',
     withCssMargins: true,
@@ -26,12 +26,12 @@ for elements within nested scrollable divs.
   nestedScroll(target, options);
 
   // Define a global option
-  nestesScroll.defaultOptions['easingMethod'] = 'easeIn';
+  nestesScroll.defaultOptions['animationMethod'] = 'easeIn';
 ```
 
 ## Options
 
-### easingMethod (default: undefined)
+### animationMethod (default: undefined)
 
 Values:
 
@@ -46,7 +46,7 @@ value in the range of 0 to 1 (the fractional animation time)
 and returns a target value between 0 and 1 (the fractional
 scrolling position). An example for such a function could be Math.sqrt.
 
-### easingTimeout (default: 500)
+### animationTimeout (default: 500)
 
 Animation time in milliseconds.
 
