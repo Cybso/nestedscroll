@@ -37,12 +37,15 @@
 	 **/
 	var defaultOptions = {
 		easingMethod: undefined,
-		easingTimeout: 500
+		easingTimeout: 500,
+		force: false,
+		align: 'top left',
 	};
 
 	// Local shortcuts
 	var min = Math.min,
-		max = Math.max;
+		max = Math.max,
+		abs = Math.abs;
 
 	/**
 	 * Returns a DOMRect compatible object
@@ -113,9 +116,9 @@
 	var easingScrollHelper = function(target, left, top, easingAlgorithm, timeout) {
 		var start;
 		var signX = left < 0 ? -1 : 1;
-		var signY = left < 0 ? -1 : 1;
-		left = Math.abs(left);
-		top = Math.abs(top);
+		var signY = top < 0 ? -1 : 1;
+		left = abs(left);
+		top = abs(top);
 		var _this = this;
 
 		var sourceX = target.scrollLeft;
@@ -189,7 +192,11 @@
 	var hasScrollbar = function(element, computedStyle) {
 		if (element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight) {
 			computedStyle = computedStyle || window.getComputedStyle(element);
-			if (computedStyle.getPropertyValue('overflow') !== 'hidden') {
+			var overflow = computedStyle.getPropertyValue('overflow');
+			if (overflow === 'auto' || overflow === 'scroll') {
+				return true;
+			}
+			if (overflow !== 'hidden' && element === document.scrollingElement) {
 				return true;
 			}
 		}
@@ -213,8 +220,8 @@
 		return new Rect(
 			tRect.left - cRect.left,
 			tRect.top - cRect.top,
-			tRect.right - cRect.left,
-			tRect.bottom - cRect.top
+			tRect.width,
+			tRect.height
 		);
 	};
 
@@ -242,6 +249,63 @@
 		return undefined;
 	};
 
+	var alignments = {
+		left: function(rect, scrollable, force) {
+			if (!force && rect.left >= 0 && rect.right <= scrollable.clientWidth) {
+				return 0;
+			}
+			var maxLeft = scrollable.scrollWidth - scrollable.clientWidth;
+			return min(maxLeft, max(0, scrollable.scrollLeft + rect.left)) - scrollable.scrollLeft;
+		},
+		top: function(rect, scrollable, force) {
+			if (!force && rect.top >= 0 && rect.bottom <= scrollable.clientHeight) {
+				return 0;
+			}
+			var maxTop = scrollable.scrollHeight - scrollable.clientHeight;
+			return min(maxTop, max(0, scrollable.scrollTop + rect.top)) - scrollable.scrollTop;
+		},
+		right: function(rect, scrollable, force) {
+			if (!force && rect.left >= 0 && rect.right <= scrollable.clientWidth) {
+				return 0;
+			}
+			var maxLeft = scrollable.scrollWidth - scrollable.clientWidth;
+			var result = min(maxLeft, max(0, scrollable.scrollLeft + rect.right - scrollable.clientWidth)) - scrollable.scrollLeft;
+			return result;
+		},
+		bottom: function(rect, scrollable, force) {
+			if (!force && rect.top >= 0 && rect.bottom <= scrollable.clientHeight) {
+				return 0;
+			}
+			var maxTop = scrollable.scrollHeight - scrollable.clientHeight;
+			return min(maxTop, max(0, scrollable.scrollTop + rect.bottom - scrollable.clientHeight)) - scrollable.scrollTop;
+		},
+		autox: function(rect, scrollable, force) {
+			// Use this minimal offset
+			var delta1 = alignments.left(rect, scrollable, force),
+			    delta2 = alignments.right(rect, scrollable, force);
+			if (abs(delta1) <= abs(delta2)) {
+				return delta1;
+			} else {
+				return delta2;
+			}
+		},
+		autoy: function(rect, scrollable, force) {
+			// Use this minimal offset
+			var delta1 = alignments.top(rect, scrollable, force),
+			    delta2 = alignments.bottom(rect, scrollable, force);
+			if (abs(delta1) <= abs(delta2)) {
+				return delta1;
+			} else {
+				return delta2;
+			}
+		}
+	};
+
+	var isInViewportX = function(rect, scrollable) {
+	};
+	var isInViewportY = function(rect, scrollable) {
+	};
+
 	var currentScrollMonitor;
 	var scrollIntoViewport = function(element, options) {
 		options = mergeObjects(defaultOptions, options);
@@ -252,6 +316,14 @@
 		}
 		currentScrollMonitor = { abort: false, options: options };
 
+		var align = (options.align || '').split(' ');
+		var getOffsetX = options.align.indexOf('left') >= 0 ? alignments['left'] : (
+			options.align.indexOf('right') >= 0 ? alignments['right'] : alignments['autox']
+		);
+		var getOffsetY = options.align.indexOf('top') >= 0 ? alignments['top'] : (
+			options.align.indexOf('right') >= 0 ? alignments['bottom'] : alignments['autoy']
+		);
+
 		var scrollable = findScrollableParent(element);
 		var scrollings = [];
 		var totalOffsetLeft = 0,
@@ -260,12 +332,11 @@
 			var rect = getRelativeBoundingRect(element, scrollable);
 			rect.left -= totalOffsetLeft;
 			rect.top -= totalOffsetTop;
+			rect.right -= totalOffsetLeft;
+			rect.bottom -= totalOffsetTop;
 
-			var maxLeft = scrollable.scrollWidth - scrollable.clientWidth;
-			var maxTop = scrollable.scrollHeight - scrollable.clientHeight;
-
-			var offsetLeft = min(maxLeft, max(0, scrollable.scrollLeft + rect.left)) - scrollable.scrollLeft;
-			var offsetTop = min(maxTop, max(0, scrollable.scrollTop + rect.top)) - scrollable.scrollTop;
+			var offsetLeft = getOffsetX(rect, scrollable, options.force);
+			var offsetTop = getOffsetY(rect, scrollable, options.force);
 
 			totalOffsetLeft += offsetLeft;
 			totalOffsetTop += offsetTop;
