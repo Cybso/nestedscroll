@@ -3,6 +3,17 @@
 Javascript library that implements [scrollIntoViewport()](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView)
 for elements within nested scrollable divs.
 
+You can define if the element should be aligned to the upper, lower, left
+or right boundary, or let Nested Scroll automatically decide depending on
+the shortest path.
+
+Additionally, it is possible to define some animation methods, respect the
+element's border and margin and add extra margins on each side when scrolling.
+
+But what makes this library unique compared to other libraries I've looked
+into is that it that it not only works with vertical but also with
+**horizontal scrollbars**, **nested scrollable DIVs* and **fixed elements**!
+
 ## Usage
 
 ```javascript
