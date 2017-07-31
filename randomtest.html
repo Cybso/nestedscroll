@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<style>
+			div {
+				position: relative;
+				border: 1px solid grey;
+				overflow: auto;
+			}
+
+			span.selected {
+				background-color: red;
+			}
+
+			#control {
+				position: fixed;
+				z-index: 10;
+				top: 0;
+				left: 50%;
+				transform: translate(-50%, 0);
+			}
+		</style>
+		<script type="text/javascript" src="nestedscroll.js"></script>
+		<script>
+			nestedScroll.defaultOptions.animationMethod = Math.sqrt;
+			nestedScroll.align = '';
+
+			var lastTarget;
+			function doNestedScroll(id) {
+				var target = document.getElementById(id);
+				if (lastTarget !== undefined) {
+					lastTarget.classList.remove('selected');
+				}
+				target.classList.add('selected');
+				nestedScroll(target);
+				lastTarget = target;
+			}
+
+			function guid() {
+				function s4() {
+					return Math.floor((1 + Math.random()) * 0x10000)
+						.toString(16)
+						.substring(1);
+				}
+				return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+						s4() + '-' + s4() + s4() + s4();
+			}
+
+		</script>
+	</head>
+	<body>
+		<fieldset id="control">
+			<select id="goto" size="1" onchange="var t = event.target; doNestedScroll(t.options[t.selectedIndex].value)">
+			</select>
+			<button onclick="var t = document.getElementById('goto'); var idx = Math.floor(Math.random() * t.options.length); t.selectedIndex = idx; doNestedScroll(t.options[idx].value)">Random</button>
+		</fieldset>
+	</body>
+	<script>
+		var goto = document.getElementById('goto');
+		var containers = [document.body];
+		var min = 10, max = 100;
+		for (var i=0; i < 100; i++) {
+			// Create a new elemenet
+			var r = Math.round(256*Math.random()),
+				g = Math.round(256*Math.random()),
+				b = Math.round(256*Math.random());
+			var div = document.createElement('DIV');
+
+			// Assign a random color, size (10 to 200) and position (10 to 200)
+			div.style.backgroundColor = 'rgba(' + r + ', ' + g + ', ' + b + ', 0.25)';
+			div.style.left = '' + (min + Math.random() * (max-min)) + 'vw';
+			div.style.top = '' + (min + Math.random() * (max-min)) + 'vh';
+			div.style.width = '' + (min + Math.random() * (max-min)) + 'vw';
+			div.style.height = '' + (min + Math.random() * (max-min)) + 'vh';
+
+			// Create a random uuid and write it into i
+			var span = document.createElement('SPAN');
+			span.innerText = guid();
+			span.id = span.innerText;
+			div.appendChild(span);
+
+			// Select a random parent
+			var idx = Math.round(Math.random() * (containers.length - 1));
+			containers[idx].appendChild(div);
+			containers.push(div);
+
+			// Add element to select box
+			var option = document.createElement('OPTION');
+			option.innerText = span.id;
+			goto.appendChild(option);
+		}
+	</script>
+</html>
