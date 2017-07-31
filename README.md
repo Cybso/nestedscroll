@@ -12,7 +12,7 @@ element's border and margin and add extra margins on each side when scrolling.
 
 But what makes this library unique compared to other libraries I've looked
 into is that it that it not only works with vertical but also with
-**horizontal scrollbars**, **nested scrollable DIVs* and **fixed elements**!
+**horizontal scrollbars**, **nested scrollable DIVs** and **fixed elements**!
 
 ## Usage
 
