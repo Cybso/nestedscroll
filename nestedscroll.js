@@ -361,11 +361,11 @@
 		var targetRect = getTargetBoundingClientRect(element, options);
 
 		var align = (options.align || '').split(' ');
-		var getOffsetX = options.align.indexOf('left') >= 0 ? alignments['left'] : (
-			options.align.indexOf('right') >= 0 ? alignments['right'] : alignments['autox']
+		var getOffsetX = align.indexOf('left') >= 0 ? alignments['left'] : (
+			align.indexOf('right') >= 0 ? alignments['right'] : alignments['autox']
 		);
-		var getOffsetY = options.align.indexOf('top') >= 0 ? alignments['top'] : (
-			options.align.indexOf('bottom') >= 0 ? alignments['bottom'] : alignments['autoy']
+		var getOffsetY = align.indexOf('top') >= 0 ? alignments['top'] : (
+			align.indexOf('bottom') >= 0 ? alignments['bottom'] : alignments['autoy']
 		);
 
 		var scrollable = findScrollableParent(element);
@@ -395,6 +395,39 @@
 		}
 	};
 
-	nestedScroll.defaultOptions = defaultOptions;
+	/**
+	 * Getter/Setter for default options. Call this either without arguments
+	 * to get a copy of all options, with a string argument to get a concrete
+	 * value, with an object argument to update multiple options at once and
+	 * with two arguments to set a concrete value.
+	 **/
+	nestedScroll.option = function() {
+		switch (arguments.length) {
+		case 0:
+			// Return all options (but only as copy)
+			return mergeObjects(defaultOptions);
+		case 1:
+			if (typeof arguments[0] === 'string') {
+				// Getter call
+				return defaultOptions[arguments[0]];
+			} else {
+				// Mass setter
+				var obj = arguments[0];
+				for (var k in obj) {
+					if (obj.hasOwnProperty(k)) {
+						defaultOptions[k] = obj[k];
+					}
+				}
+			}
+			break;
+		case 2:
+			// Setter call
+			defaultOptions[arguments[0]] = arguments[1];
+			break;
+		default:
+			throw "Illegal number of arguments: " + arguments.length;
+		}
+	};
+
 	return nestedScroll;
 });

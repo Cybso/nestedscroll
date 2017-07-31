@@ -21,12 +21,17 @@
 		</style>
 		<script type="text/javascript" src="nestedscroll.js"></script>
 		<script>
-			nestedScroll.defaultOptions.animationMethod = Math.sqrt;
-			nestedScroll.align = '';
+			nestedScroll.option({
+				animationMethod: Math.sqrt,
+				force: true,
+				align: ''
+			});
 
 			var lastTarget;
-			function doNestedScroll(id) {
-				var target = document.getElementById(id);
+			function doNestedScroll(target) {
+				if (typeof target === 'string') {
+					target = document.getElementById(target);
+				}
 				if (lastTarget !== undefined) {
 					lastTarget.classList.remove('selected');
 				}
@@ -52,6 +57,7 @@
 			<select id="goto" size="1" onchange="var t = event.target; doNestedScroll(t.options[t.selectedIndex].value)">
 			</select>
 			<button onclick="var t = document.getElementById('goto'); var idx = Math.floor(Math.random() * t.options.length); t.selectedIndex = idx; doNestedScroll(t.options[idx].value)">Random</button>
+			<button onclick="doNestedScroll(lastTarget)">Realign</button>
 		</fieldset>
 	</body>
 	<script>
