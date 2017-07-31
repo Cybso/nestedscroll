@@ -198,7 +198,6 @@
 		return r;
 	};
 
-
 	/**
 	 * Returns true if the element should have scrollbars
 	 **/
@@ -285,15 +284,16 @@
 				return 0;
 			}
 			var maxLeft = scrollable.scrollWidth - scrollable.clientWidth;
-			var result = min(maxLeft, max(0, scrollable.scrollLeft + rect.right - scrollable.clientWidth)) - scrollable.scrollLeft;
-			return result;
+			return min(maxLeft, max(0, scrollable.scrollLeft + rect.right - scrollable.clientWidth)) -
+				scrollable.scrollLeft;
 		},
 		bottom: function(rect, scrollable, force) {
 			if (!force && rect.top >= 0 && rect.bottom <= scrollable.clientHeight) {
 				return 0;
 			}
 			var maxTop = scrollable.scrollHeight - scrollable.clientHeight;
-			return min(maxTop, max(0, scrollable.scrollTop + rect.bottom - scrollable.clientHeight)) - scrollable.scrollTop;
+			return min(maxTop, max(0, scrollable.scrollTop + rect.bottom - scrollable.clientHeight)) -
+				scrollable.scrollTop;
 		},
 		autox: function(rect, scrollable, force) {
 			// Use this minimal offset
@@ -365,7 +365,7 @@
 			options.align.indexOf('right') >= 0 ? alignments['right'] : alignments['autox']
 		);
 		var getOffsetY = options.align.indexOf('top') >= 0 ? alignments['top'] : (
-			options.align.indexOf('right') >= 0 ? alignments['bottom'] : alignments['autoy']
+			options.align.indexOf('bottom') >= 0 ? alignments['bottom'] : alignments['autoy']
 		);
 
 		var scrollable = findScrollableParent(element);
