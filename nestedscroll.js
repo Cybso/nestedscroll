@@ -39,7 +39,7 @@
 		animationMethod: undefined,
 		animationTimeout: 500,
 		force: false,
-		align: 'top left',
+		align: 'top',
 		withCssMargins: false,
 		marginTop: 0,
 		marginLeft: 0,
