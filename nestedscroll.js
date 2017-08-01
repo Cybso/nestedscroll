@@ -25,9 +25,9 @@
 	if ( typeof define === 'function' && define.amd ) {
 		define([], factory(root));
 	} else if (typeof module !== 'undefined' && module.export) {
-		module.exports = factory(root);
+		module.exports = factory(root)();
 	} else {
-		root.nestedScroll = factory(root);
+		root.nestedScroll = factory(root)();
 	}
 })(typeof global !== 'undefined' ? global : this.window || this.global, function (root) {
 	"use strict"; 
@@ -408,7 +408,7 @@
 	 * value, with an object argument to update multiple options at once and
 	 * with two arguments to set a concrete value.
 	 **/
-	nestedScroll.option = function() {
+	nestedScroll.config = function() {
 		switch (arguments.length) {
 		case 0:
 			// Return all options (but only as copy)
@@ -436,5 +436,7 @@
 		}
 	};
 
-	return nestedScroll;
+	return function() {
+		return nestedScroll;
+	};
 });

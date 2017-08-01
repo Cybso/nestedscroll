@@ -36,11 +36,11 @@ into is that it that it not only works with vertical but also with
   };
   nestedScroll(target, options);
 
-  // Define a global option
-  nestedScroll.option('animationMethod', 'easeIn');
+  // Define a global configuration option
+  nestedScroll.config('animationMethod', 'easeIn');
 
-  // Define multiple options at once
-  nestedScroll.option({
+  // Define multiple configuration options at once
+  nestedScroll.config({
       marginLeft: 5,
       marginTop: 5,
       marginRight: 5,
