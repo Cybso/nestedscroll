@@ -165,6 +165,13 @@
 	 * Chooses a scroll helper from this.options.animationMethod.
 	 **/
 	var scrollHelper = function(target, left, top) {
+		if (left >= -1 && left <= 1 && top >= -1 && top <= 1) {
+			// No need to animate this...
+			target.scrollTop += top;
+			target.scrollLeft += left;
+			return;
+		}
+
 		var animationMethod = this.options['animationMethod'];
 		var animationTimeout = parseInt(this.options['animationTimeout']);
 		if (animationMethod && !isNaN(animationTimeout) && animationTimeout > 0) {
