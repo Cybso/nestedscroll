@@ -205,6 +205,42 @@
 		return r;
 	};
 
+	/*
+	* How to detect which element is the scrolling element in charge of scrolling the viewport:
+	*
+	* - in Quirks mode the scrolling element is the "body"
+	* - in Standard mode the scrolling element is the "documentElement"
+	*
+	* webkit based browsers always use the "body" element, disrespectful of the specifications:
+	*
+	*  http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop
+	*
+	* This feature detection helper allow cross-browser scroll operations on the viewport,
+	* it will guess which element to use in each browser both in Quirk and Standard modes.
+	* See how this can be used in a "smooth scroll to anchors references" example here:
+	*
+	*  https://dl.dropboxusercontent.com/u/598365/scrollTo/scrollTo.html
+	*
+	* It is just a fix for possible differences between browsers versions (currently any Webkit).
+	* In case the Webkit bug get fixed someday, it will just work if they follow the specs. Win !
+	*
+	* Author: Diego Perini
+	* Updated: 2014/09/18
+	* License: MIT
+	*/
+	function getScrollingElement() {
+		var d = document;
+		if (d.scrollingElement !== undefined) {
+			// Roland Tapken: Use document.scrollingElement if available.
+			// https://developer.mozilla.org/de/docs/Web/API/document/scrollingElement
+			return d.scrollingElement;
+		}
+		return  d.documentElement.scrollHeight > d.body.scrollHeight &&
+			d.compatMode.indexOf('CSS1') === 0 ?
+			d.documentElement :
+			d.body;
+	}
+
 	/**
 	 * Returns true if the element should have scrollbars
 	 **/
@@ -215,7 +251,7 @@
 			if (overflow === 'auto' || overflow === 'scroll') {
 				return true;
 			}
-			if (overflow !== 'hidden' && element === document.scrollingElement) {
+			if (overflow !== 'hidden' && element === getScrollingElement()) {
 				return true;
 			}
 		}
@@ -229,7 +265,7 @@
 	 **/
 	var getRelativeBoundingRect = function(tRect, container) {
 		var cRect;
-		if (container === document.scrollingElement) {
+		if (container === getScrollingElement()) {
 			cRect = new Rect(0, 0, container.clientWidth, container.clientHeight);
 		} else {
 			cRect = container.getBoundingClientRect();
@@ -251,7 +287,7 @@
 	 * returns undefined.
 	 **/
 	var findScrollableParent = function(element) {
-		if (element === document.scrollingElement) {
+		if (element === getScrollingElement()) {
 			// This is either body or html. Don't go further.
 			return;
 		}
